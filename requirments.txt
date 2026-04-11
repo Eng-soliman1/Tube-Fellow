@@ -1,5 +1,0 @@
-streamlit
-openai
-pandas
-fpdf2
-groq
