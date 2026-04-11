@@ -5,13 +5,6 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/')
-def landing():
-    return "WORKING"
-
-@app.route('/')
-def landing():
-    return render_template('landing.html')
 
 
 @app.route('/app')
