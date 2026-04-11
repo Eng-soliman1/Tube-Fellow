@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube Fellow | AI Creator Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080b14;
+            --bg2: #0d1120;
+            --red: #ff2d2d;
+            --purple: #7c3aed;
+            --purple-light: #a78bfa;
+            --glow-red: rgba(255,45,45,0.3);
+            --glow-purple: rgba(124,58,237,0.3);
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --border: rgba(255,255,255,0.07);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(124,58,237,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,58,237,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .orb-1 {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255,45,45,0.12) 0%, transparent 70%);
+            top: -200px; right: -200px;
+            animation: float1 8s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+            bottom: -100px; left: -100px;
+            animation: float2 10s ease-in-out infinite;
+        }
+
+        @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,30px)} }
+        @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-20px)} }
+
+        /* NAVBAR */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(8,11,20,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .logo span:first-child { color: white; }
+        .logo span:last-child { color: var(--red); }
+
+        .nav-badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        /* LAYOUT */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            padding: 30px 20px;
+            position: fixed;
+            top: 70px;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .sidebar-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .sidebar input, .sidebar select {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .sidebar input:focus, .sidebar select:focus {
+            border-color: rgba(124,58,237,0.5);
+        }
+        .sidebar select option { background: var(--bg2); }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        .cpm-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .cpm-label { color: var(--muted); font-size: 0.85rem; }
+        .cpm-value { color: var(--purple-light); font-family: monospace; font-size: 0.85rem; }
+
+        /* MAIN */
+        .main {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(124,58,237,0.1);
+            border: 1px solid rgba(124,58,237,0.3);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--purple-light);
+            margin-bottom: 16px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--red), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 40px;
+            width: fit-content;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 100px;
+            color: var(--muted);
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--red), var(--purple));
+            color: white;
+        }
+        .tab-btn:hover:not(.active) { color: white; }
+
+        /* TAB CONTENT */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--purple-light);
+            margin-bottom: 8px;
+        }
+
+        .section-sub {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        /* FORM ELEMENTS */
+        .form-input {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            margin-bottom: 16px;
+        }
+        .form-input:focus {
+            border-color: rgba(124,58,237,0.5);
+            box-shadow: 0 0 20px rgba(124,58,237,0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+        .form-select option { background: var(--bg2); }
+
+        .generate-btn {
+            background: linear-gradient(135deg, var(--red), var(--purple));
+            border: none;
+            padding: 14px 32px;
+            border-radius: 100px;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--glow-red);
+        }
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* RESULT */
+        .result-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-top: 24px;
+            line-height: 1.8;
+            color: #94a3b8;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .result-box.show { display: block; }
+
+        /* METRICS */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(124,58,237,0.3);
+        }
+        .metric-label { color: var(--muted); font-size: 0.8rem; margin-bottom: 8px; }
+        .metric-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--red), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* LOADER */
+        .loader {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            color: var(--purple-light);
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+        .loader.show { display: flex; }
+        .spinner {
+            width: 20px; height: 20px;
+            border: 2px solid rgba(124,58,237,0.3);
+            border-top-color: var(--purple);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* COLS */
+        .cols-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* DOWNLOAD BTN */
+        .download-btn {
+            background: rgba(124,58,237,0.15);
+            border: 1px solid rgba(124,58,237,0.4);
+            border-radius: 100px;
+            padding: 10px 24px;
+            color: var(--purple-light);
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 16px;
+        }
+        .download-btn:hover {
+            background: rgba(124,58,237,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+        .footer-logo span:first-child { color: white; font-family: monospace; font-weight: 700; }
+        .footer-logo span:last-child { color: var(--red); font-family: monospace; font-weight: 700; }
+        footer p { color: var(--muted); font-size: 0.8rem; margin-top: 8px; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--red), var(--purple));
+            border-radius: 100px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 20px; }
+            .tabs { width: 100%; overflow-x: auto; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .cols-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="logo"><span>TUBE</span><span>FELLOW</span></div>
+        <div class="nav-badge">AI · CREATOR · ENGINE</div>
+    </nav>
+
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-title">⚙ Settings</div>
+
+            <div class="input-group">
+                <label class="input-label">🔑 API Key</label>
+                <input type="password" id="api-key" placeholder="gsk_...">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">🌍 Target Country</label>
+                <select id="country">
+                    <option>USA</option>
+                    <option>UK</option>
+                    <option>Canada</option>
+                    <option>Australia</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">🎯 Niche</label>
+                <select id="niche">
+                    <option>Finance</option>
+                    <option>Technology</option>
+                    <option>SaaS</option>
+                    <option>Health</option>
+                    <option>Education</option>
+                    <option>Gaming</option>
+                </select>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="sidebar-title">💰 CPM Rates</div>
+            <div class="cpm-card"><span class="cpm-label">🇺🇸 USA</span><span class="cpm-value">$20–$30</span></div>
+            <div class="cpm-card"><span class="cpm-label">🇬🇧 UK</span><span class="cpm-value">$15–$25</span></div>
+            <div class="cpm-card"><span class="cpm-label">🇨🇦 Canada</span><span class="cpm-value">$15–$20</span></div>
+            <div class="cpm-card"><span class="cpm-label">🇦🇺 Australia</span><span class="cpm-value">$15–$22</span></div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+
+            <!-- HEADER -->
+            <div class="header">
+                <div class="header-tag">✦ Open by Open AI · 100% Free</div>
+                <h1>Tube Fellow</h1>
+                <p>Your AI- YouTube Growth Engine</p>
+            </div>
+
+            <!-- TABS -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('strategy', this)">📡 Strategy</button>
+                <button class="tab-btn" onclick="switchTab('script', this)">✍️ Scriptwriting</button>
+                <button class="tab-btn" onclick="switchTab('visuals', this)">🎨 Visuals</button>
+                <button class="tab-btn" onclick="switchTab('revenue', this)">💰 Revenue</button>
+            </div>
+
+            <!-- TAB 1: STRATEGY -->
+            <div id="tab-strategy" class="tab-content active">
+                <div class="section-title">📡 Global Trend Radar</div>
+                <div class="section-sub">Discover what's going viral in the next 24 hours</div>
+                <input type="text" class="form-input" id="trend-topic" placeholder="e.g. AI tools for business">
+                <button class="generate-btn" onclick="generate('trend')">🚀 Analyze Trends</button>
+                <div class="loader" id="loader-trend"><div class="spinner"></div> Analyzing global trends...</div>
+                <div class="result-box" id="result-trend"></div>
+            </div>
+
+            <!-- TAB 2: SCRIPT -->
+            <div id="tab-script" class="tab-content">
+                <div class="section-title">✍️ Script Surgeon</div>
+                <div class="section-sub">Generate retention-optimized scripts with engagement spikes</div>
+                <input type="text" class="form-input" id="script-topic" placeholder="e.g. How to invest $1000 in 2025">
+                <select class="form-select" id="video-length">
+                    <option>5 minutes</option>
+                    <option>10 minutes</option>
+                    <option>15 minutes</option>
+                    <option>20 minutes</option>
+                </select>
+                <button class="generate-btn" onclick="generate('script')">✍️ Generate Script</button>
+                <div class="loader" id="loader-script"><div class="spinner"></div> Writing your script...</div>
+                <div class="result-box" id="result-script"></div>
+                <button class="download-btn" id="download-btn" onclick="downloadScript()" style="display:none">📥 Download Script</button>
+            </div>
+
+            <!-- TAB 3: VISUALS -->
+            <div id="tab-visuals" class="tab-content">
+                <div class="section-title">🎨 Visual Studio</div>
+                <div class="section-sub">Generate high-CTR thumbnail concepts</div>
+                <input type="text" class="form-input" id="visual-topic" placeholder="e.g. How I made $10k with AI">
+                <button class="generate-btn" onclick="generate('visuals')">🎨 Generate Thumbnails</button>
+                <div class="loader" id="loader-visuals"><div class="spinner"></div> Designing concepts...</div>
+                <div class="result-box" id="result-visuals"></div>
+            </div>
+
+            <!-- TAB 4: REVENUE -->
+            <div id="tab-revenue" class="tab-content">
+                <div class="section-title">💰 Revenue Engine</div>
+                <div class="section-sub">Calculate your earning potential</div>
+                <div class="cols-2">
+                    <input type="number" class="form-input" id="views" placeholder="Expected Views" value="10000" min="1000">
+                    <input type="text" class="form-input" id="revenue-topic" placeholder="Video Topic">
+                </div>
+                <button class="generate-btn" onclick="generate('revenue')">💰 Calculate Revenue</button>
+                <div class="loader" id="loader-revenue"><div class="spinner"></div> Calculating...</div>
+                <div class="metrics-grid" id="metrics" style="display:none">
+                    <div class="metric-card">
+                        <div class="metric-label">💵 Min Revenue</div>
+                        <div class="metric-value" id="rev-min">$0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">💰 Max Revenue</div>
+                        <div class="metric-value" id="rev-max">$0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">📊 CPM Range</div>
+                        <div class="metric-value" id="rev-cpm">$0</div>
+                    </div>
+                </div>
+                <div class="result-box" id="result-revenue"></div>
+            </div>
+
+            <!-- FOOTER -->
+            <footer>
+                <div class="footer-logo"><span>TUBE</span><span>FELLOW</span></div>
+                <p>© 2025 · Powered by Eng Soliman</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        function switchTab(name, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            el.classList.add('active');
+        }
+
+        async function generate(type) {
+            const apiKey = document.getElementById('api-key').value;
+            const country = document.getElementById('country').value;
+            const niche = document.getElementById('niche').value;
+
+            if (!apiKey) { alert('⚠️ Please enter your API Key'); return; }
+
+            let prompt = '';
+            let loaderId = 'loader-' + type;
+            let resultId = 'result-' + type;
+
+            if (type === 'trend') {
+                const topic = document.getElementById('trend-topic').value;
+                if (!topic) { alert('⚠️ Please enter a topic'); return; }
+                prompt = `Analyze YouTube trend potential for: "${topic}" in ${country} for the ${niche} niche.
+                Provide: 1. TOP 5 viral video ideas for next 24 hours 2. Best keywords with search volume 3. Competition level 4. Viral potential score (1-10) 5. Best upload time 6. Recommended video length`;
+            }
+            else if (type === 'script') {
+                const topic = document.getElementById('script-topic').value;
+                const length = document.getElementById('video-length').value;
+                if (!topic) { alert('⚠️ Please enter a topic'); return; }
+                prompt = `Create a complete YouTube script for: "${topic}". Target: ${country} | Niche: ${niche} | Length: ${length}.
+                Structure as table: | Timestamp | Audio (Script) | Visual (B-Roll) | Retention Strategy |
+                Start with POWERFUL hook, add pattern interrupts every 60-90 seconds, flag [BORING ZONE] replace with [ENGAGEMENT SPIKE], end with strong CTA.
+                After table add: 3 KEY HOOKS and 5 PATTERN INTERRUPTS`;
+            }
+            else if (type === 'visuals') {
+                const topic = document.getElementById('visual-topic').value;
+                if (!topic) { alert('⚠️ Please enter a topic'); return; }
+                prompt = `Create 3 DALL-E 3 prompts for YouTube thumbnails for: "${topic}". Target: ${country} | Niche: ${niche}.
+                For each: 1. DALL-E 3 Prompt 2. Color Scheme 3. Emotion 4. Text Overlay (max 5 words) 5. Lighting 6. Why 10%+ CTR`;
+            }
+            else if (type === 'revenue') {
+                const views = document.getElementById('views').value;
+                const topic = document.getElementById('revenue-topic').value;
+
+                const cpmRates = { USA: [20,30], UK: [15,25], Canada: [15,20], Australia: [15,22] };
+                const multipliers = { Finance: 1.5, Technology: 1.3, SaaS: 1.4, Health: 1.2, Education: 1.1, Gaming: 0.9 };
+
+                const [cpmMin, cpmMax] = cpmRates[country];
+                const mult = multipliers[niche];
+                const revMin = ((views / 1000) * cpmMin * mult).toFixed(0);
+                const revMax = ((views / 1000) * cpmMax * mult).toFixed(0);
+
+                document.getElementById('rev-min').textContent = '$' + Number(revMin).toLocaleString();
+                document.getElementById('rev-max').textContent = '$' + Number(revMax).toLocaleString();
+                document.getElementById('rev-cpm').textContent = `$${cpmMin}–$${cpmMax}`;
+                document.getElementById('metrics').style.display = 'grid';
+
+                if (!topic) return;
+                prompt = `For a YouTube video about: "${topic}" targeting ${country} in ${niche} niche.
+                Recommend 3 affiliate products from Amazon or ClickBank.
+                For each: 1. Product Name 2. Platform 3. Commission 4. Why it matches audience 5. How to mention naturally`;
+            }
+
+            document.getElementById(loaderId).classList.add('show');
+            document.getElementById(resultId).classList.remove('show');
+
+            try {
+                const res = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, api_key: apiKey })
+                });
+                const data = await res.json();
+
+                document.getElementById(loaderId).classList.remove('show');
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    document.getElementById(resultId).textContent = data.result;
+                    document.getElementById(resultId).classList.add('show');
+                    if (type === 'script') {
+                        document.getElementById('download-btn').style.display = 'inline-block';
+                    }
+                }
+            } catch (err) {
+                document.getElementById(loaderId).classList.remove('show');
+                alert('Connection error. Make sure Flask is running.');
+            }
+        }
+
+        function downloadScript() {
+            const text = document.getElementById('result-script').textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'tube_fellow_script.txt';
+            a.click();
+        }
+    </script>
+
+</body>
+</html>
