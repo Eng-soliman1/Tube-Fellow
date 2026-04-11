@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import os
-from openai import OpenAI
 
 app = Flask(__name__)
 CORS(app)
@@ -21,33 +20,12 @@ def index():
 def analyze():
     data = request.json
     prompt = data.get('prompt')
-    api_key = data.get('api_key')
-
-    if not api_key:
-        return jsonify({'error': 'API Key مطلوب'}), 400
 
     if not prompt:
-        return jsonify({'error': 'Prompt مطلوب'}), 400
+        return jsonify({'error': 'Prompt required'}), 400
 
     try:
-        client = OpenAI(api_key=api_key)
-
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an expert YouTube Growth Hacker with 10+ years of experience."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-        )
-
-        result = response.choices[0].message.content
-        return jsonify({'result': result})
+        return jsonify({'result': f"You sent: {prompt}"})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
