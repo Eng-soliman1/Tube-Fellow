@@ -5,7 +5,9 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-
+@app.route('/')
+def landing():
+    return "OK"
 
 @app.route('/app')
 def index():
