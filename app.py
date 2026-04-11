@@ -9,7 +9,7 @@ CORS(app)
 
 @app.route('/')
 def landing():
-    return "WORKING"
+    return render_template('landing.html')
 
 
 @app.route('/app')
@@ -25,6 +25,7 @@ def analyze():
 
     if not api_key:
         return jsonify({'error': 'API Key مطلوب'}), 400
+
     if not prompt:
         return jsonify({'error': 'Prompt مطلوب'}), 400
 
@@ -36,9 +37,12 @@ def analyze():
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an expert YouTube Growth Hacker..."
+                    "content": "You are an expert YouTube Growth Hacker with 10+ years of experience."
                 },
-                {"role": "user", "content": prompt}
+                {
+                    "role": "user",
+                    "content": prompt
+                }
             ]
         )
 
@@ -48,13 +52,6 @@ def analyze():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-        return jsonify({'error': str(e)}), 500
-
-import os
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
