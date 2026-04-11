@@ -9,7 +9,7 @@ CORS(app)
 
 @app.route('/')
 def landing():
-    return render_template('landing.html')
+    return "WORKING"
 
 
 @app.route('/app')
