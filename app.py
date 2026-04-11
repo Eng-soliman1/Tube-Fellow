@@ -5,9 +5,9 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/test')
-def test():
-    return "OK"
+@app.route('/')
+def landing():
+    return "WORKING"
 
 @app.route('/')
 def landing():
