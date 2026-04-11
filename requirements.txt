@@ -1,8 +1,3 @@
-﻿streamlit
-openai
-pandas
-fpdf2
-groq
-Flask
+flask
 flask-cors
 gunicorn
